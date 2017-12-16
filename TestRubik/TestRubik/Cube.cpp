@@ -8,12 +8,14 @@ Cube::Cube()
 
 
 Cube::Cube(int x, int y, int z)
+	: mX(x)
+	, mY(y)
+	, mZ(z)
 {
-
 	HR(gD3DDevice->CreateVertexBuffer(
-		NB_VERTICES * sizeof(VertexPosCol), D3DUSAGE_WRITEONLY, 0, D3DPOOL_MANAGED, &mVB, 0));
+		NB_VERTICES * sizeof(VertexPosCol), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &mVB, 0));
 
-	HR(mVB->Lock(0, 0, (void**)&mVertices, 0));
+	HR(mVB->Lock(0, 0, (void**)&mVertices, D3DLOCK_DISCARD));
 
 	// Declare all 6 faces vertices with their corresponding color
 	mVertices[0] = VertexPosCol(x, y + CUBE_SIZE, z, 0xFF000000);
@@ -36,15 +38,15 @@ Cube::Cube(int x, int y, int z)
 	mVertices[14] = VertexPosCol(x, y + CUBE_SIZE, z - CUBE_SIZE, 0xFF0000FF);
 	mVertices[15] = VertexPosCol(x, y, z - CUBE_SIZE, 0xFF0000FF);
 
-	mVertices[16] = VertexPosCol(x, y + CUBE_SIZE, z - CUBE_SIZE, 0x00000000);
-	mVertices[17] = VertexPosCol(x, y + CUBE_SIZE, z, 0x00000000);
-	mVertices[18] = VertexPosCol(x + CUBE_SIZE, y + CUBE_SIZE, z - CUBE_SIZE, 0x00000000);
-	mVertices[19] = VertexPosCol(x + CUBE_SIZE, y + CUBE_SIZE, z, 0x00000000);
+	mVertices[16] = VertexPosCol(x, y + CUBE_SIZE, z - CUBE_SIZE, 0xFFFFFFFF);
+	mVertices[17] = VertexPosCol(x, y + CUBE_SIZE, z, 0xFFFFFFFF);
+	mVertices[18] = VertexPosCol(x + CUBE_SIZE, y + CUBE_SIZE, z - CUBE_SIZE, 0xFFFFFFFF);
+	mVertices[19] = VertexPosCol(x + CUBE_SIZE, y + CUBE_SIZE, z, 0xFFFFFFFF);
 
-	mVertices[20] = VertexPosCol(x, y, z - CUBE_SIZE, 0x000000FF);
-	mVertices[21] = VertexPosCol(x, y, z, 0x000000FF);
-	mVertices[22] = VertexPosCol(x + CUBE_SIZE, y, z - CUBE_SIZE, 0x000000FF);
-	mVertices[23] = VertexPosCol(x + CUBE_SIZE, y, z, 0x000000FF);
+	mVertices[20] = VertexPosCol(x, y, z - CUBE_SIZE, 0xffffff00);
+	mVertices[21] = VertexPosCol(x, y, z, 0xffffff00);
+	mVertices[22] = VertexPosCol(x + CUBE_SIZE, y, z - CUBE_SIZE, 0xffffff00);
+	mVertices[23] = VertexPosCol(x + CUBE_SIZE, y, z, 0xffffff00);
 
 	HR(mVB->Unlock());
 
@@ -55,7 +57,7 @@ Cube::Cube(int x, int y, int z)
 
 	HR(mIB->Lock(0, 0, (void**)&k, 0));
 
-	//Declare all vertices in each face of the cube
+	//Declare all vertices on each face of the cube
 	for (int i = 0; i < VERTICESXFACES; i += NB_FACES)
 	{
 		k[i] = i - i / 3; 
@@ -67,7 +69,6 @@ Cube::Cube(int x, int y, int z)
 	}
 
 	HR(mIB->Unlock());
-
 
 	D3DXMatrixIdentity(&mScale);
 }

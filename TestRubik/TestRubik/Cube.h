@@ -17,10 +17,14 @@ public:
 
 	void Draw();
 
-	inline VertexPosCol* const GetCubeVertices() { return mVertices; }
-	inline IDirect3DIndexBuffer9* const GetCubeUB() const { return mIB; }
+	inline VertexPosCol* const GetCubeVertices() const { return mVertices; }
+	inline void SetCubeVertices(VertexPosCol* v) { mVertices = v; }
+	inline IDirect3DIndexBuffer9* const GetCubeIB() const { return mIB; }
 	inline IDirect3DVertexBuffer9* const GetCubeVB() const { return mVB; }
 	inline D3DXMATRIX const GetWorld() { return mRotX * mRotY * mRotZ * mTransl * mScale; }
+	inline int const GetPosX() const { return mX; }
+	inline int const GetPosY() const { return mY; }
+	inline int const GetPosZ() const { return mZ; }
 
 private:
 	D3DXMATRIX mRotX;
@@ -29,8 +33,10 @@ private:
 	D3DXMATRIX mTransl;
 	D3DXMATRIX mScale;
 
-	VertexPosCol mVertices[NB_VERTICES];
+	VertexPosCol* mVertices;
 	IDirect3DVertexBuffer9* mVB;
 	IDirect3DIndexBuffer9* mIB;
+
+	int mX, mY, mZ;
 };
 
