@@ -1,9 +1,8 @@
 #pragma once
 #pragma once
 
-#include "D3DApp.h"
-#include "Vertex.h"
 #include "math.h"
+#include "Cube.h"
 
 #define NB_FACES 4
 #define VERTICES_PER_FACE 6
@@ -53,4 +52,12 @@ private:
 	D3DXMATRIX rotY;
 	D3DXMATRIX rotZ;
 	D3DXVECTOR4 vT;
+
+	D3DXMATRIX mT;
+	D3DXMATRIX mTInverted;
+
+	D3DXMATRIX WVP;
+	D3DXMATRIX Ry;
+
+	Cube* mCubes[26];
 };

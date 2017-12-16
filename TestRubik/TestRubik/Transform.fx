@@ -2,10 +2,10 @@
 // High level shading language
 
 uniform extern float4x4 gWVP;
-uniform extern float gEyePos;
+/*uniform extern float gEyePos;
 uniform extern float4 gFogColor;
 uniform extern float gFogStart;
-uniform extern float gFogRange;
+uniform extern float gFogRange;*/
 
 struct OutputVS
 {
