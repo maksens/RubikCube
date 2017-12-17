@@ -16,7 +16,8 @@ public:
 	~D3DApp();
 
 	int Run();
-
+	inline HINSTANCE getAppInstance() { return hInstance; }
+	inline HWND getMainWnd() { return hWnd; }
 	virtual void Update() {}
 	virtual void Draw() {}
 

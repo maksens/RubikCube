@@ -9,13 +9,14 @@ Rubik::Rubik()
 {
 	int currentCube = 0;
 
-	for (int x = -NB_CUBES; x < NB_CUBES - 1; x += 2)
+	// Instantiate cubes 
+	for (int x = -NB_CUBES; x < NB_CUBES - 1; x += CUBE_OFFSET)
 	{
-		for (int y = -NB_CUBES; y < NB_CUBES - 1; y += 2)
+		for (int y = -NB_CUBES; y < NB_CUBES - 1; y += CUBE_OFFSET)
 		{
-			for (int z = -NB_CUBES + 2; z < NB_CUBES + 1; z += 2)
+			for (int z = -NB_CUBES + 2; z < NB_CUBES + 1; z += CUBE_OFFSET)
 			{
-				bool isTheMiddleCube = (x == -1 && y == -1 && z == 1);
+				bool isTheMiddleCube = (x == MIDDLE_X && y == MIDDLE_Y && z == MIDDLE_Z);
 
 				if (!isTheMiddleCube)
 				{
@@ -37,7 +38,11 @@ Rubik::Rubik()
 
 Rubik::~Rubik()
 {
-	delete[] mCubes;
+	for each(Cube* c in mCubes)
+	{
+		delete c;
+		c = nullptr;
+	}
 }
 
 void Rubik::Update()
@@ -77,16 +82,18 @@ void Rubik::Update()
 
 		currentMove++;
 		mTimer = 0;
-	}
+	}                             
 }
 
-void Rubik::ChangeXZ(Cube * const c, const Orientation & const o, const Layer & const layer)
+void Rubik::ChangeXZ(Cube * const c, const Orientation & o, const Layer & layer)
 {
 	int posX = c->GetPosX();
 	int posY = c->GetPosY();
 	int posZ = c->GetPosZ();
 
 	int Boundaries = 0;
+
+	// Select the right cubes that fit the layer that just moved
 
 	if (layer == Y1)
 		Boundaries = MIN_Y;
@@ -95,25 +102,27 @@ void Rubik::ChangeXZ(Cube * const c, const Orientation & const o, const Layer & 
 	else if (layer == Y3)
 		Boundaries = MAX_Y;
 
+	// After a rotation around the Y axis is done, set the new position of each cubes in the rubik
+
 	if (posY == Boundaries)
 	{
 		if (posZ != MIDDLE_Z || posX != MIDDLE_X)
 		{
 			if (o == Left)
 			{
-				c->SetPosX(posZ - 2);
+				c->SetPosX(posZ - CUBE_OFFSET);
 				c->SetPosZ(-posX);
 			}
 			else if (o == Right)
 			{
 				c->SetPosX(-posZ);
-				c->SetPosZ(posX + 2);
+				c->SetPosZ(posX + CUBE_OFFSET);
 			}
 		}
 	}
 }
 
-void Rubik::ChangeXY(Cube * const c, const Orientation & const o, const Layer & const layer)
+void Rubik::ChangeXY(Cube * const c, const Orientation & o, const Layer & layer)
 {
 	int posX = c->GetPosX();
 	int posY = c->GetPosY();
@@ -121,12 +130,16 @@ void Rubik::ChangeXY(Cube * const c, const Orientation & const o, const Layer & 
 
 	int Boundaries = 0;
 
+	// Select the right cubes that fit the layer that just moved
+
 	if (layer == Z1)
 		Boundaries = MIN_Z;
 	else if (layer == Z2)
 		Boundaries = MIDDLE_Z;
 	else if (layer == Z3)
 		Boundaries = MAX_Z;
+
+	// After a rotation around the Z axis is done, set the new position of each cubes in the rubik
 
 	if (posZ == Boundaries)
 	{
@@ -158,13 +171,15 @@ void Rubik::ChangeXY(Cube * const c, const Orientation & const o, const Layer & 
 	}
 }
 
-void Rubik::ChangeYZ(Cube * const c, const Orientation & const o, const Layer & const layer)
+void Rubik::ChangeYZ(Cube * const c, const Orientation & o, const Layer & layer)
 {
 	int posX = c->GetPosY();
 	int posY = c->GetPosX();
 	int posZ = c->GetPosZ();
 
 	int Boundaries = 0;
+
+	// Select the right cubes that fit the layer that just moved
 
 	if (layer == X1)
 		Boundaries = MIN_X;
@@ -173,6 +188,7 @@ void Rubik::ChangeYZ(Cube * const c, const Orientation & const o, const Layer & 
 	else if (layer == X3)
 		Boundaries = MAX_X;
 
+	// After a rotation around the X axis is done, set the new position of each cubes in the rubik
 
 	if (posY == Boundaries)
 	{
@@ -180,19 +196,19 @@ void Rubik::ChangeYZ(Cube * const c, const Orientation & const o, const Layer & 
 		{
 			if (o == Up)
 			{
-				c->SetPosY(posZ - 2);
+				c->SetPosY(posZ - CUBE_OFFSET);
 				c->SetPosZ(-posX);
 			}
 			else if (o == Down)
 			{
 				c->SetPosY(-posZ);
-				c->SetPosZ(posX + 2);
+				c->SetPosZ(posX + CUBE_OFFSET);
 			}
 		}
 	}
 }
 
-bool Rubik::Rotate(const Orientation & const o, const Layer & const layer, float currentAngle)
+bool Rubik::Rotate(const Orientation& o, const Layer& layer, float currentAngle)
 {
 	if (currentAngle > ROTATION_ANGLE)
 	{
@@ -308,6 +324,7 @@ bool Rubik::Rotate(const Orientation & const o, const Layer & const layer, float
 				}
 			}
 			break;
+			// Select the upper layer of the rubik and rotate its cubes
 		case Layer::Y3:
 			for each (Cube* c in mCubes)
 			{
@@ -317,6 +334,7 @@ bool Rubik::Rotate(const Orientation & const o, const Layer & const layer, float
 
 					for (int v = 0; v < NB_VERTICES; ++v)
 					{
+						// Depending of the orientation, applies different rotation 
 						if (o == Left)
 							D3DXVec3Transform(&mTransformVec, &vertices[v].pos, &(mRotY));
 						else if (o == Right)

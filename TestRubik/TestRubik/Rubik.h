@@ -7,6 +7,7 @@
 #define VERTICES_PER_FACE 6
 #define NB_CUBES 3
 #define CUBE_SIZE 1.9f
+#define CUBE_OFFSET 2
 #define ROTATION_ANGLE (D3DX_PI / 2)
 #define ROTATION_SPEED 0.001f
 
@@ -53,10 +54,10 @@ public:
 	~Rubik();
 
 	void Update();
-	void ChangeXZ(Cube* const c, const Orientation& const o, const Layer& const layer);
-	void ChangeXY(Cube* const c, const Orientation& const o, const Layer& const layer);
-	void ChangeYZ(Cube* const c, const Orientation& const o, const Layer& const layer);
-	bool Rotate(const Orientation& const o, const Layer& const layer, float currentAngle);
+	void ChangeXZ(Cube* const c, const Orientation& o, const Layer& layer);
+	void ChangeXY(Cube* const c, const Orientation& o, const Layer& layer);
+	void ChangeYZ(Cube* const c, const Orientation& o, const Layer& layer);
+	bool Rotate(const Orientation& o, const Layer& layer, float currentAngle);
 	void ShuffleRubik();
 
 	Cube* mCubes[26];

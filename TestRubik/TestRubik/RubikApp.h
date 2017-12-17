@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Rubik.h"
+#include "DirectInput.h"
 #include <math.h>
 #include <time.h>
 
@@ -15,15 +16,8 @@ public:
 
 	void Update();
 	void Draw();
-	//void ChangeXZ(Cube* const c, const Orientation& const o, const Layer& const layer);
-	//void ChangeXY(Cube* const c, const Orientation& const o, const Layer& const layer);
-	//void ChangeYZ(Cube* const c, const Orientation& const o, const Layer& const layer);
-	//bool Rotate(const Orientation& const o, const Layer& const layer, float currentAngle);
-	//void ShuffleRubik();
 
 private:
-	/*bool mShufflingHasEnded = false;
-	float mTimer;*/
 
 	ID3DXEffect* mFx;
 	ID3DXBuffer* mErrors;
@@ -40,18 +34,13 @@ private:
 
 	// Matrix
 	D3DXMATRIX mWVP;
-	//D3DXMATRIX mRotX;
-	//D3DXMATRIX mRotY;
-	//D3DXMATRIX mRotZ;
-	//D3DXMATRIX mRotXInv;
-	//D3DXMATRIX mRotYInv;
-	//D3DXMATRIX mRotZInv;
-	//D3DXVECTOR4 mTransformVec;
+	D3DXMATRIX mRotX;
+	D3DXMATRIX mRotY;
+	D3DXMATRIX mRotZ;
 
-	/*Cube* mCubes[26];
-
-	ShuffleMove mShuffleMoves[25];
-	int currentMove;*/
+	float mCurrentRotX;
+	float mCurrentRotY;
+	float mCurrentRotZ;
 
 	Rubik* mRubik;
 };
