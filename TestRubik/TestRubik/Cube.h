@@ -18,7 +18,6 @@ public:
 	void Draw();
 
 	inline VertexPosCol* const GetCubeVertices() const { return mVertices; }
-	inline void SetCubeVertices(VertexPosCol* v) { mVertices = v; }
 	inline IDirect3DIndexBuffer9* const GetCubeIB() const { return mIB; }
 	inline IDirect3DVertexBuffer9* const GetCubeVB() const { return mVB; }
 	inline D3DXMATRIX const GetWorld() { return mRotX * mRotY * mRotZ * mTransl * mScale; }

@@ -9,6 +9,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_ int nCmdShow)
 {
 	gD3DApp = new RubikApp(hInstance, nCmdShow);
-
+	srand(time(0));
 	return gD3DApp->Run();
 }
