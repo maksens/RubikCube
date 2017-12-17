@@ -9,7 +9,9 @@
 #define NB_FACES 4
 #define VERTICES_PER_FACE 6
 #define NB_CUBES 3
-#define CUBE_SIZE 1.9
+#define CUBE_SIZE 1.9f
+#define ROTATION_ANGLE (D3DX_PI / 2)
+#define ROTATION_SPEED 0.0001f
 
 #pragma endregion
 #pragma region LayerDeclaration
@@ -28,6 +30,20 @@
 
 #pragma endregion
 
+enum Orientation
+{
+	Up, Down, FrontLeft, FrontRight, Left, Right
+};
+
+enum Layer
+{
+	X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3
+};
+
+struct MoveType
+{
+};
+
 class RubikApp
 	: public D3DApp
 {
@@ -39,9 +55,22 @@ public:
 
 	void Update();
 	void Draw();
+	void ChangeXZ(Cube* const c, const Orientation& const o, const Layer& const layer);
+	void ChangeXY(Cube* const c, const Orientation& const o, const Layer& const layer);
+	void ChangeYZ(Cube* const c, const Orientation& const o, const Layer& const layer);
+	bool Rotate(const Orientation& const o, const Layer& const layer, float currentAngle);
 
 private:
+	bool rotXHasStarted = false;
+	bool rotYHasStarted = false;
+
+	int nbOfBlocks = 0;
+
 	float mCurrRot;
+	float mLerpRot;
+	float mTimer;
+
+	float rotChoice;
 
 	ID3DXEffect* mFx;
 	ID3DXBuffer* mErrors;
@@ -61,6 +90,9 @@ private:
 	D3DXMATRIX mRotX;
 	D3DXMATRIX mRotY;
 	D3DXMATRIX mRotZ;
+	D3DXMATRIX mRotXInv;
+	D3DXMATRIX mRotYInv;
+	D3DXMATRIX mRotZInv;
 	D3DXVECTOR4 mTransformVec;
 
 	Cube* mCubes[26];

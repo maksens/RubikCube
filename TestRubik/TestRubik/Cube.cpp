@@ -7,10 +7,11 @@ Cube::Cube()
 }
 
 
-Cube::Cube(int x, int y, int z)
+Cube::Cube(int x, int y, int z, int cube)
 	: mX(x)
 	, mY(y)
 	, mZ(z)
+	, cubeNb(cube)
 {
 	HR(gD3DDevice->CreateVertexBuffer(
 		NB_VERTICES * sizeof(VertexPosCol), D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY, 0, D3DPOOL_DEFAULT, &mVB, 0));

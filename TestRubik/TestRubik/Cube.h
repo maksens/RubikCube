@@ -12,7 +12,7 @@ class Cube
 {
 public:
 	Cube();
-	Cube(int x, int y, int z);
+	Cube(int x, int y, int z, int cube);
 	~Cube();
 
 	void Draw();
@@ -22,9 +22,13 @@ public:
 	inline IDirect3DIndexBuffer9* const GetCubeIB() const { return mIB; }
 	inline IDirect3DVertexBuffer9* const GetCubeVB() const { return mVB; }
 	inline D3DXMATRIX const GetWorld() { return mRotX * mRotY * mRotZ * mTransl * mScale; }
+	inline int const GetCubeNumber() const { return cubeNb; }
 	inline int const GetPosX() const { return mX; }
 	inline int const GetPosY() const { return mY; }
 	inline int const GetPosZ() const { return mZ; }
+	inline void SetPosX(int x) { mX = x; }
+	inline void SetPosY(int y) { mY = y; }
+	inline void SetPosZ(int z) { mZ = z; }
 
 private:
 	D3DXMATRIX mRotX;
@@ -38,5 +42,6 @@ private:
 	IDirect3DIndexBuffer9* mIB;
 
 	int mX, mY, mZ;
+	int cubeNb;
 };
 
