@@ -62,13 +62,7 @@ RubikApp::RubikApp(HINSTANCE hInstance, int nCmdShow)
 	D3DXMatrixRotationAxis(&mRotYInv, &D3DXVECTOR3(0, -1, 0), ROTATION_SPEED);
 	D3DXMatrixRotationAxis(&mRotZInv, &D3DXVECTOR3(0, 0, -1), ROTATION_SPEED);
 
-	for each(Cube* cube in mCubes)
-	{
-		if (cube->GetPosY() == MAX_Y)
-		{
-			std::cout << "Cube # " << cube->GetCubeNumber() << std::endl;
-		}
-	}
+	ShuffleRubik();
 }
 
 RubikApp::~RubikApp()
@@ -166,9 +160,9 @@ void RubikApp::Draw()
 
 void RubikApp::ChangeXZ(Cube* const c, const Orientation& const o, const Layer& const layer)
 {
-	int tempY = c->GetPosY();
-	int tempX = c->GetPosX();
-	int tempZ = c->GetPosZ();
+	int posX = c->GetPosX();
+	int posY = c->GetPosY();
+	int posZ = c->GetPosZ();
 
 	int Boundaries = 0;
 
@@ -179,22 +173,19 @@ void RubikApp::ChangeXZ(Cube* const c, const Orientation& const o, const Layer& 
 	else if (layer == Y3)
 		Boundaries = MAX_Y;
 
-	if (tempY == Boundaries)
+	if (posY == Boundaries)
 	{
-		if (o == Left)
+		if (posZ != MIDDLE_Z || posX != MIDDLE_Y)
 		{
-			if (tempZ != MIDDLE_Z || tempX != MIDDLE_Y)
+			if (o == Left)
 			{
-				c->SetPosX(tempZ - 2);
-				c->SetPosZ(-tempX);
+				c->SetPosX(posZ - 2);
+				c->SetPosZ(-posX);
 			}
-		}
-		else if (o == Right)
-		{
-			if (tempZ != MIDDLE_Z || tempY != MIDDLE_Y)
+			else if (o == Right)
 			{
-				c->SetPosX(-tempZ);
-				c->SetPosZ(tempX + 2);
+				c->SetPosX(-posZ);
+				c->SetPosZ(posX + 2);
 
 			}
 		}
@@ -203,9 +194,9 @@ void RubikApp::ChangeXZ(Cube* const c, const Orientation& const o, const Layer& 
 
 void RubikApp::ChangeXY(Cube* const c, const Orientation& const o, const Layer& const layer)
 {
-	int tempY = c->GetPosY();
-	int tempX = c->GetPosX();
-	int tempZ = c->GetPosZ();
+	int posX = c->GetPosY();
+	int posY = c->GetPosX();
+	int posZ = c->GetPosZ();
 
 	int Boundaries = 0;
 
@@ -216,26 +207,19 @@ void RubikApp::ChangeXY(Cube* const c, const Orientation& const o, const Layer& 
 	else if (layer == Z3)
 		Boundaries = MAX_Z;
 
-	if (tempZ == Boundaries)
+	if (posZ == Boundaries)
 	{
-		if (o == FrontLeft)
+		if (posY != MIDDLE_X || posX != MIDDLE_Y)
 		{
-			if (tempZ != MIDDLE_Z || tempY != MIDDLE_Y)
+			if (o == FrontLeft)
 			{
-				if (tempZ != MIDDLE_Z)
-					c->SetPosY(tempZ - 2);
-				else
-					c->SetPosY(-tempZ);
-
-				c->SetPosZ(-tempY);
+				c->SetPosX(1);
+				c->SetPosY(posY);
 			}
-		}
-		else if (o == FrontRight)
-		{
-			if (tempZ != MIDDLE_Z || tempY != MIDDLE_Y)
+			else if (o == FrontRight)
 			{
-				c->SetPosY(tempY + ((tempZ + 1) - (tempY + 3)));
-				c->SetPosZ(-tempY);
+				c->SetPosX(posX);
+				c->SetPosY(2);
 			}
 		}
 	}
@@ -243,9 +227,9 @@ void RubikApp::ChangeXY(Cube* const c, const Orientation& const o, const Layer& 
 
 void RubikApp::ChangeYZ(Cube* const c, const Orientation& const o, const Layer& const layer)
 {
-	int tempY = c->GetPosY();
-	int tempX = c->GetPosX();
-	int tempZ = c->GetPosZ();
+	int posX = c->GetPosY();
+	int posY = c->GetPosX();
+	int posZ = c->GetPosZ();
 
 	int Boundaries = 0;
 
@@ -257,22 +241,20 @@ void RubikApp::ChangeYZ(Cube* const c, const Orientation& const o, const Layer& 
 		Boundaries = MAX_X;
 
 
-	if (tempX == Boundaries)
+	if (posY == Boundaries)
 	{
-		if (o == Up)
+		if (posZ != MIDDLE_Z || posX != MIDDLE_Y)
 		{
-			if (tempZ != MIDDLE_Z || tempY != MIDDLE_Y)
+			if (o == Up)
 			{
-				c->SetPosY(tempY + ((tempZ + 1) - (tempY + 3)));
-				c->SetPosZ(-tempY);
+				/*c->SetPosY(tempY + ((tempZ + 1) - (tempY + 3)));*/
+				c->SetPosY(posZ - 2);
+				c->SetPosZ(-posX);
 			}
-		}
-		else if (o == Down)
-		{
-			if (tempZ != MIDDLE_Z || tempY != MIDDLE_Y)
+			else if (o == Down)
 			{
-				c->SetPosY(-tempZ);
-				c->SetPosZ(tempY + 2);
+				c->SetPosY(-posZ);
+				c->SetPosZ(posX + 2);
 			}
 		}
 	}
@@ -284,11 +266,6 @@ bool RubikApp::Rotate(const Orientation& const o, const Layer& const layer, floa
 	if (currentAngle > ROTATION_ANGLE)
 	{
 		return true;
-	}
-	if (currentAngle < 0)
-	{
-		mTimer += ROTATION_SPEED;
-		return false;
 	}
 	else
 	{
@@ -406,7 +383,7 @@ bool RubikApp::Rotate(const Orientation& const o, const Layer& const layer, floa
 				if (c->GetPosY() == MAX_Y)
 				{
 					auto vertices = c->GetCubeVertices();
-					/*std::cout << "Cube # " << c->GetCubeNumber() << std::endl;*/
+
 					for (int v = 0; v < NB_VERTICES; ++v)
 					{
 						if (o == Left)
@@ -426,5 +403,23 @@ bool RubikApp::Rotate(const Orientation& const o, const Layer& const layer, floa
 	}
 	mTimer += ROTATION_SPEED;
 	return false;
+}
+
+void RubikApp::ShuffleRubik()
+{
+	// Randomize several moves to shuffle the rubbik
+	for (int i = 0; i < 15; ++i)
+	{
+		// Randomize a number that fits into Layer range
+		int layerRand = rand() % 9;
+		Layer l = (Layer)layerRand;
+
+		// Randomize a number that fits into Orientation range and that fits with the layer choice too
+		int orientRand = rand() % (layerRand / 3 + 2);
+		Orientation o = (Orientation)orientRand;
+
+		// Filling in the array with the new move
+		mShuffleMoves[i] = ShuffleMove(l, o);
+	}
 }
 

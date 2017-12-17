@@ -1,8 +1,9 @@
 #pragma once
 #pragma once
 
-#include "math.h"
 #include "Cube.h"
+#include <math.h>
+#include <time.h>
 
 #pragma region CubeConstants
 
@@ -32,7 +33,7 @@
 
 enum Orientation
 {
-	Up, Down, FrontLeft, FrontRight, Left, Right
+	Up, Down, Left, Right, FrontLeft, FrontRight
 };
 
 enum Layer
@@ -40,8 +41,13 @@ enum Layer
 	X1, X2, X3, Y1, Y2, Y3, Z1, Z2, Z3
 };
 
-struct MoveType
+struct ShuffleMove
 {
+	ShuffleMove() {}
+	ShuffleMove( Layer l, Orientation o) : layer(l), orientation(o) {}
+
+	Layer layer;
+	Orientation orientation;
 };
 
 class RubikApp
@@ -59,10 +65,12 @@ public:
 	void ChangeXY(Cube* const c, const Orientation& const o, const Layer& const layer);
 	void ChangeYZ(Cube* const c, const Orientation& const o, const Layer& const layer);
 	bool Rotate(const Orientation& const o, const Layer& const layer, float currentAngle);
+	void ShuffleRubik();
 
 private:
 	bool rotXHasStarted = false;
 	bool rotYHasStarted = false;
+	bool mShufflingHasStarted = false;
 
 	int nbOfBlocks = 0;
 
@@ -96,4 +104,6 @@ private:
 	D3DXVECTOR4 mTransformVec;
 
 	Cube* mCubes[26];
+
+	ShuffleMove mShuffleMoves[15];
 };
