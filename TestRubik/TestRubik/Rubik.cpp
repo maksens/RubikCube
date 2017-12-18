@@ -4,21 +4,20 @@
 
 Rubik::Rubik()
 	: mTransformVec(1, 1, 1, 0)
-	, mCurrentMove(0)
+	, mCurrentMove(25)
 	, mTimer(0.f)
-	, mShufflingHasEnded(false)
+	, mShufflingHasEnded(true)
 	, mRotationHasStarted(false)
 	, mRotationHasEnded(false)
-
 { 
 	int currentCube = 0;
 
-	// Instantiate cubes 
+	// Instantiate the cubes and set their starting position
 	for (int x = -NB_CUBES; x < NB_CUBES - 1; x += CUBE_OFFSET)
 	{
 		for (int y = -NB_CUBES; y < NB_CUBES - 1; y += CUBE_OFFSET)
 		{
-			for (int z = -NB_CUBES + 2; z < NB_CUBES + 1; z += CUBE_OFFSET)
+			for (int z = -NB_CUBES + CUBE_OFFSET; z < NB_CUBES + 1; z += CUBE_OFFSET)
 			{
 				bool isTheMiddleCube = (x == MIDDLE_X && y == MIDDLE_Y && z == MIDDLE_Z);
 
@@ -52,9 +51,10 @@ Rubik::~Rubik()
 
 void Rubik::Update()
 {
-	mShufflingHasEnded = mCurrentMove >= 25;
+	mShufflingHasEnded = mCurrentMove >= SHUFFLING_COUNT;
 
 	// Start by shuffling the cube with a random set of moves
+	// Every rotation increase the number of moves done and at its max, stops the shuffling
 	// Once the set has been emptied the game can start and the keyboard input get unlocked
 	if (!mShufflingHasEnded && Rotate(mShuffleMoves[mCurrentMove].orientation, mShuffleMoves[mCurrentMove].layer, mTimer))
 	{
@@ -420,10 +420,10 @@ bool Rubik::Rotate(const Orientation& o, const Layer& layer, float currentAngle)
 // Randomize several moves to shuffle the rubbik
 void Rubik::ShuffleRubik()
 {
-	for (int i = 0; i < 25; ++i)
+	for (int i = 0; i < SHUFFLING_COUNT; ++i)
 	{
 		// Randomize a number that fits into Layer range
-		int layerRand = rand() % 9;
+		int layerRand = rand() % LAYER_SIZE;
 		Layer l = (Layer)layerRand;
 
 		// Randomize a number that fits into Orientation range and that fits with the layer choice too
@@ -447,6 +447,7 @@ void Rubik::ShuffleRubik()
 // 7 8 9 are for layers Z1, Z2, Z3
 // Q and E are use to determine wich side the layer is going to rotate to
 // Had to do it this way because of lack of mouse position usage
+// Press SpaceBar and Left Control to shuffle the cube
 void Rubik::CheckInputs()
 {
 	if (gDInput->keyDown(DIKEYBOARD_NUMPAD1) && gDInput->keyDown(DIKEYBOARD_Q))
@@ -556,6 +557,11 @@ void Rubik::CheckInputs()
 		mOrientation = FrontRight;
 		mLayer = Z3;
 		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_SPACE) && gDInput->keyDown(DIKEYBOARD_LCONTROL))
+	{
+		mCurrentMove = 0;
+		mShufflingHasEnded = false;
 	}
 }
 

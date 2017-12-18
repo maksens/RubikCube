@@ -85,6 +85,5 @@ void Cube::Draw()
 	HR(gD3DDevice->SetStreamSource(0, mVB, 0, sizeof(VertexPosCol)));
 	HR(gD3DDevice->SetVertexDeclaration(VertexPosCol::decl));
 	HR(gD3DDevice->SetIndices(mIB));
-
 	HR(gD3DDevice->DrawIndexedPrimitive(D3DPT_TRIANGLELIST, 0, 0, NB_VERTICES, 0, NB_FACES * 2));
 }

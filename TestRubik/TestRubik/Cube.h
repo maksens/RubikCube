@@ -3,7 +3,7 @@
 #include "D3DApp.h"
 #include "Vertex.h"
 
-#define CUBE_SIZE 1.9
+#define CUBE_SIZE 1.95f
 #define NB_VERTICES 24
 #define NB_FACES 6
 #define VERTICESXFACES 36
@@ -18,10 +18,6 @@ public:
 	void Draw();
 
 	inline VertexPosCol* const GetCubeVertices() const { return mVertices; }
-	inline IDirect3DIndexBuffer9* const GetCubeIB() const { return mIB; }
-	inline IDirect3DVertexBuffer9* const GetCubeVB() const { return mVB; }
-	inline D3DXMATRIX const GetWorld() { return mRotX * mRotY * mRotZ * mTransl * mScale; }
-	inline int const GetCubeNumber() const { return cubeNb; }
 	inline int const GetPosX() const { return mX; }
 	inline int const GetPosY() const { return mY; }
 	inline int const GetPosZ() const { return mZ; }
