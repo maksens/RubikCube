@@ -1,7 +1,6 @@
 #pragma once
 
 #include "Rubik.h"
-#include "DirectInput.h"
 #include <math.h>
 #include <time.h>
 

@@ -1,6 +1,8 @@
 #pragma once
 
 #include "Cube.h"
+#include "DirectInput.h"
+
 #pragma region CubeConstants
 
 #define NB_FACES 4
@@ -9,6 +11,7 @@
 #define CUBE_SIZE 1.9f
 #define CUBE_OFFSET 2
 #define ROTATION_ANGLE (D3DX_PI / 2)
+#define SHUFFLE_SPEED 0.001f
 #define ROTATION_SPEED 0.001f
 
 #pragma endregion
@@ -59,6 +62,9 @@ public:
 	void ChangeYZ(Cube* const c, const Orientation& o, const Layer& layer);
 	bool Rotate(const Orientation& o, const Layer& layer, float currentAngle);
 	void ShuffleRubik();
+	void CheckInputs();
+	void MoveRowColumnLayer();
+	void ChangeRowColumLayer(const Orientation& o, const Layer l);
 
 	Cube* mCubes[26];
 
@@ -73,8 +79,13 @@ private:
 
 	ShuffleMove mShuffleMoves[25];
 
-	bool mShufflingHasEnded = false;
+	bool mRotationHasStarted;
+	bool mRotationHasEnded;
+	bool mShufflingHasEnded;
 	float mTimer;
-	int currentMove;
+	int mCurrentMove;
+
+	Orientation mOrientation;
+	Layer mLayer;
 };
 

@@ -4,9 +4,13 @@
 
 Rubik::Rubik()
 	: mTransformVec(1, 1, 1, 0)
-	, currentMove(0)
+	, mCurrentMove(0)
 	, mTimer(0.f)
-{
+	, mShufflingHasEnded(false)
+	, mRotationHasStarted(false)
+	, mRotationHasEnded(false)
+
+{ 
 	int currentCube = 0;
 
 	// Instantiate cubes 
@@ -27,6 +31,7 @@ Rubik::Rubik()
 		}
 	}
 
+	// Initalize all the matrix that are going to be used by the cube's rotation
 	D3DXMatrixRotationAxis(&mRotX, &D3DXVECTOR3(-1, 0, 0), ROTATION_SPEED);
 	D3DXMatrixRotationAxis(&mRotY, &D3DXVECTOR3(0, 1, 0), ROTATION_SPEED);
 	D3DXMatrixRotationAxis(&mRotZ, &D3DXVECTOR3(0, 0, 1), ROTATION_SPEED);
@@ -47,44 +52,67 @@ Rubik::~Rubik()
 
 void Rubik::Update()
 {
-	mShufflingHasEnded = currentMove >= 25;
+	mShufflingHasEnded = mCurrentMove >= 25;
 
-	if (Rotate(mShuffleMoves[currentMove].orientation, mShuffleMoves[currentMove].layer, mTimer) && !mShufflingHasEnded)
+	// Start by shuffling the cube with a random set of moves
+	// Once the set has been emptied the game can start and the keyboard input get unlocked
+	if (!mShufflingHasEnded && Rotate(mShuffleMoves[mCurrentMove].orientation, mShuffleMoves[mCurrentMove].layer, mTimer))
 	{
-		Layer l = mShuffleMoves[currentMove].layer;
-		Orientation o = mShuffleMoves[currentMove].orientation;
-
-		bool xNotMoving = (l == X1 || l == X2 || l == X3);
-		bool yNotMoving = (l == Y1 || l == Y2 || l == Y3);
-		bool zNotMoving = (l == Z1 || l == Z2 || l == Z3);
-
-		if (xNotMoving)
-		{
-			for each (Cube* c in mCubes)
-			{
-				ChangeYZ(c, o, l);
-			}
-		}
-		else if (yNotMoving)
-		{
-			for each (Cube* c in mCubes)
-			{
-				ChangeXZ(c, o, l);
-			}
-		}
-		else if (zNotMoving)
-		{
-			for each (Cube* c in mCubes)
-			{
-				ChangeXY(c, o, l);
-			}
-		}
-
-		currentMove++;
+		ChangeRowColumLayer(mShuffleMoves[mCurrentMove].orientation, mShuffleMoves[mCurrentMove].layer);
+		mCurrentMove++;
 		mTimer = 0;
-	}                             
+	}
+	
+	if (mShufflingHasEnded)
+	{
+		gDInput->poll();
+
+		if (!mRotationHasStarted)
+			CheckInputs();
+		else if (mRotationHasStarted)
+			MoveRowColumnLayer();
+	}
 }
 
+// Once the X Axis rotation has ended swap all the cubes position that were involved in it
+void Rubik::ChangeYZ(Cube * const c, const Orientation & o, const Layer & layer)
+{
+	int posX = c->GetPosY();
+	int posY = c->GetPosX();
+	int posZ = c->GetPosZ();
+
+	int Boundaries = 0;
+
+	// Select the right cubes that fit the layer that just moved
+
+	if (layer == X1)
+		Boundaries = MIN_X;
+	else if (layer == X2)
+		Boundaries = MIDDLE_X;
+	else if (layer == X3)
+		Boundaries = MAX_X;
+
+	// After a rotation around the X axis is done, set the new position of each cubes in the rubik
+
+	if (posY == Boundaries)
+	{
+		if (posZ != MIDDLE_Z || posX != MIDDLE_X)
+		{
+			if (o == Up)
+			{
+				c->SetPosY(posZ - CUBE_OFFSET);
+				c->SetPosZ(-posX);
+			}
+			else if (o == Down)
+			{
+				c->SetPosY(-posZ);
+				c->SetPosZ(posX + CUBE_OFFSET);
+			}
+		}
+	}
+}
+
+// Once the Y Axis rotation has ended swap all the cubes position that were involved in it
 void Rubik::ChangeXZ(Cube * const c, const Orientation & o, const Layer & layer)
 {
 	int posX = c->GetPosX();
@@ -122,6 +150,7 @@ void Rubik::ChangeXZ(Cube * const c, const Orientation & o, const Layer & layer)
 	}
 }
 
+// Once the Z Axis rotation has ended swap all the cubes position that were involved in it
 void Rubik::ChangeXY(Cube * const c, const Orientation & o, const Layer & layer)
 {
 	int posX = c->GetPosX();
@@ -171,51 +200,19 @@ void Rubik::ChangeXY(Cube * const c, const Orientation & o, const Layer & layer)
 	}
 }
 
-void Rubik::ChangeYZ(Cube * const c, const Orientation & o, const Layer & layer)
-{
-	int posX = c->GetPosY();
-	int posY = c->GetPosX();
-	int posZ = c->GetPosZ();
-
-	int Boundaries = 0;
-
-	// Select the right cubes that fit the layer that just moved
-
-	if (layer == X1)
-		Boundaries = MIN_X;
-	else if (layer == X2)
-		Boundaries = MIDDLE_X;
-	else if (layer == X3)
-		Boundaries = MAX_X;
-
-	// After a rotation around the X axis is done, set the new position of each cubes in the rubik
-
-	if (posY == Boundaries)
-	{
-		if (posZ != MIDDLE_Z || posX != MIDDLE_X)
-		{
-			if (o == Up)
-			{
-				c->SetPosY(posZ - CUBE_OFFSET);
-				c->SetPosZ(-posX);
-			}
-			else if (o == Down)
-			{
-				c->SetPosY(-posZ);
-				c->SetPosZ(posX + CUBE_OFFSET);
-			}
-		}
-	}
-}
-
+// Picks all the cubes that need to be rotated with the corresponding layer and orientation and applies the corresponding
+// rotation Matrix to its current position
 bool Rubik::Rotate(const Orientation& o, const Layer& layer, float currentAngle)
 {
+	// Check if the rotation has reached its maximum and return the answer
 	if (currentAngle > ROTATION_ANGLE)
 	{
+		mRotationHasStarted = false;
 		return true;
 	}
 	else
 	{
+		// switch on all layer to apply the corresponding rotation to the right Row, Column or Layer
 		switch (layer)
 		{
 		case Layer::X1:
@@ -420,9 +417,9 @@ bool Rubik::Rotate(const Orientation& o, const Layer& layer, float currentAngle)
 	return false;
 }
 
+// Randomize several moves to shuffle the rubbik
 void Rubik::ShuffleRubik()
 {
-	// Randomize several moves to shuffle the rubbik
 	for (int i = 0; i < 25; ++i)
 	{
 		// Randomize a number that fits into Layer range
@@ -441,5 +438,172 @@ void Rubik::ShuffleRubik()
 
 		// Filling in the array with the new move
 		mShuffleMoves[i] = ShuffleMove(l, o);
+	}
+}
+
+// Check if the user is pressing the right key to do moves
+// 1 2 3 are for layers X1, X2, X3
+// 4 5 6 are for layers Y1, Y2, Y3
+// 7 8 9 are for layers Z1, Z2, Z3
+// Q and E are use to determine wich side the layer is going to rotate to
+// Had to do it this way because of lack of mouse position usage
+void Rubik::CheckInputs()
+{
+	if (gDInput->keyDown(DIKEYBOARD_NUMPAD1) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Up;
+		mLayer = X1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD1) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Down;
+		mLayer = X1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD2) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Up;
+		mLayer = X2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD2) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Down;
+		mLayer = X2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD3) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Up;
+		mLayer = X3;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD3) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Down;
+		mLayer = X3;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD4) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Left;
+		mLayer = Y1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD4) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Right;
+		mLayer = Y1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD5) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Left;
+		mLayer = Y2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD5) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Right;
+		mLayer = Y2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD6) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = Left;
+		mLayer = Y3;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD6) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = Right;
+		mLayer = Y3;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD7) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = FrontLeft;
+		mLayer = Z1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD7) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = FrontRight;
+		mLayer = Z1;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD8) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = FrontLeft;
+		mLayer = Z2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD8) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = FrontRight;
+		mLayer = Z2;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD9) && gDInput->keyDown(DIKEYBOARD_Q))
+	{
+		mOrientation = FrontLeft;
+		mLayer = Z3;
+		mRotationHasStarted = true;
+	}
+	else if (gDInput->keyDown(DIKEYBOARD_NUMPAD9) && gDInput->keyDown(DIKEYBOARD_E))
+	{
+		mOrientation = FrontRight;
+		mLayer = Z3;
+		mRotationHasStarted = true;
+	}
+}
+
+// Once the user has pressed an adequate combination of keys, the cube will rotate untill it reachs a complete rotation of 90 degres
+// on the corresponding Row, Column or layer
+void Rubik::MoveRowColumnLayer()
+{
+	if (Rotate(mOrientation, mLayer, mTimer))
+	{
+		ChangeRowColumLayer(mOrientation, mLayer);
+		mTimer = 0;
+	}
+}
+
+// Once the rotation has ended, the cube changes all cubes position that were moved during the Row, Column or Layer Rotation
+void Rubik::ChangeRowColumLayer(const Orientation& o, const Layer l)
+{
+	Layer layer = l;
+	Orientation orientation = o;
+
+	//Check in which layer the rotation has occured
+	bool xNotMoving = (layer == X1 || layer == X2 || layer == X3);
+	bool yNotMoving = (layer == Y1 || layer == Y2 || layer == Y3);
+	bool zNotMoving = (layer == Z1 || layer == Z2 || layer == Z3);
+
+	// Swap all cubes position that were moved during the Row, Column or Layer Rotation
+	if (xNotMoving)
+	{
+		for each (Cube* c in mCubes)
+		{
+			ChangeYZ(c, orientation, layer);
+		}
+		mRotationHasStarted = false;
+	}
+	else if (yNotMoving)
+	{
+		for each (Cube* c in mCubes)
+		{
+			ChangeXZ(c, orientation, layer);
+		}
+		mRotationHasStarted = false;
+	}
+	else if (zNotMoving)
+	{
+		for each (Cube* c in mCubes)
+		{
+			ChangeXY(c, orientation, layer);
+		}
+		mRotationHasStarted = false;
 	}
 }
