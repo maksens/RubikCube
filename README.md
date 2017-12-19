@@ -1,7 +1,7 @@
 # RubikCube
 
 Class project done in C++ Using DirectX9 Library
-No solver included, only 3D programming, algorithm to move and to shuffle the cube
+No solver included, only 3D programming, algorithm to move and to shuffle the cube are provided
 
 This is an initial release. Will probably get upgraded because the inputs are quite terrible for the user right now.
 
